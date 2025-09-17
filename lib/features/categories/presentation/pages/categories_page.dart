@@ -12,6 +12,7 @@ class CategoriesPage extends StatelessWidget {
 
     final nameCtrl = TextEditingController();
     final membersCtrl = TextEditingController();
+    GroupingMethod selectedMethod = GroupingMethod.random;
 
     return Scaffold(
         appBar: AppBar(title: const Text("Categorías")),
@@ -26,15 +27,16 @@ class CategoriesPage extends StatelessWidget {
             return ListTile(
                 title: Text(c.name),
                 subtitle: Text(
-                    "Método: ${c.groupingMethod.name} | Máx miembros: ${c.maxMembers}"),
+                "Método: ${c.groupingMethod.name} | Máx miembros: ${c.maxMembers}",
+                ),
                 trailing: IconButton(
                 icon: const Icon(Icons.delete, color: Colors.red),
-                onPressed: () => controller.deleteCategory(c.id),
+                onPressed: () => controller.deleteCategory(c.courseId, c.id),
                 ),
                 onTap: () {
-                // Editar categoría
                 nameCtrl.text = c.name;
                 membersCtrl.text = c.maxMembers.toString();
+                selectedMethod = c.groupingMethod;
 
                 showDialog(
                     context: context,
@@ -45,14 +47,24 @@ class CategoriesPage extends StatelessWidget {
                         children: [
                         TextField(
                             controller: nameCtrl,
-                            decoration:
-                                const InputDecoration(labelText: "Nombre"),
+                            decoration: const InputDecoration(labelText: "Nombre"),
                         ),
                         TextField(
                             controller: membersCtrl,
-                            decoration:
-                                const InputDecoration(labelText: "Máx miembros"),
+                            decoration: const InputDecoration(labelText: "Máx miembros"),
                             keyboardType: TextInputType.number,
+                        ),
+                        DropdownButton<GroupingMethod>(
+                            value: selectedMethod,
+                            onChanged: (value) {
+                            if (value != null) selectedMethod = value;
+                            },
+                            items: GroupingMethod.values
+                                .map((m) => DropdownMenuItem(
+                                    value: m,
+                                    child: Text(m.name),
+                                    ))
+                                .toList(),
                         ),
                         ],
                     ),
@@ -60,15 +72,19 @@ class CategoriesPage extends StatelessWidget {
                         TextButton(
                         onPressed: () {
                             controller.updateCategory(
-                            c.copyWith(
+                            c.courseId,
+                            Category(
+                                id: c.id,
+                                courseId: c.courseId,
                                 name: nameCtrl.text,
-                                maxMembers: int.parse(membersCtrl.text),
+                                groupingMethod: selectedMethod,
+                                maxMembers: int.tryParse(membersCtrl.text) ?? c.maxMembers,
                             ),
                             );
                             Navigator.pop(context);
                         },
                         child: const Text("Guardar"),
-                        )
+                        ),
                     ],
                     ),
                 );
@@ -81,6 +97,7 @@ class CategoriesPage extends StatelessWidget {
         onPressed: () {
             nameCtrl.clear();
             membersCtrl.clear();
+            selectedMethod = GroupingMethod.random;
 
             showDialog(
             context: context,
@@ -95,13 +112,14 @@ class CategoriesPage extends StatelessWidget {
                     ),
                     TextField(
                     controller: membersCtrl,
-                    decoration:
-                        const InputDecoration(labelText: "Máx miembros"),
+                    decoration: const InputDecoration(labelText: "Máx miembros"),
                     keyboardType: TextInputType.number,
                     ),
                     DropdownButton<GroupingMethod>(
-                    value: GroupingMethod.random,
-                    onChanged: (value) {},
+                    value: selectedMethod,
+                    onChanged: (value) {
+                        if (value != null) selectedMethod = value;
+                    },
                     items: GroupingMethod.values
                         .map((m) => DropdownMenuItem(
                                 value: m,
@@ -115,9 +133,10 @@ class CategoriesPage extends StatelessWidget {
                 TextButton(
                     onPressed: () {
                     controller.addCategory(
+                        "c_1",
                         nameCtrl.text,
-                        GroupingMethod.random,
-                        int.tryParse(membersCtrl.text) ?? 1,
+                        selectedMethod,
+                        int.tryParse(membersCtrl.text) ?? 0,
                     );
                     Navigator.pop(context);
                     },

@@ -7,10 +7,11 @@ class LoginPage extends GetView<AuthController> {
 
     @override
     Widget build(BuildContext context) {
-    final emailCtrl = TextEditingController(text: 'prof@uni.edu'); // demo
+    final emailCtrl = TextEditingController(text: 'a@a.com');   // usuario demo profe
+    final passCtrl  = TextEditingController(text: '123456');
 
     return Scaffold(
-        appBar: AppBar(title: const Text('Login (Demo)')),
+        appBar: AppBar(title: const Text('Login')),
         body: Padding(
         padding: const EdgeInsets.all(16),
         child: Obx(() {
@@ -19,15 +20,29 @@ class LoginPage extends GetView<AuthController> {
             children: [
                 TextField(
                 controller: emailCtrl,
-                decoration: const InputDecoration(
-                    labelText: 'Email (usa "prof" para rol teacher)',
+                decoration: const InputDecoration(labelText: 'Email'),
                 ),
+                const SizedBox(height: 12),
+                TextField(
+                controller: passCtrl,
+                decoration: const InputDecoration(labelText: 'Contraseña'),
+                obscureText: true,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
+                Row(
+                children: [
+                    Checkbox(
+                    value: controller.rememberMe.value,
+                    onChanged: (v) => controller.toggleRemember(v ?? false),
+                    ),
+                    const Text('Recordarme'),
+                ],
+                ),
+                const SizedBox(height: 12),
                 ElevatedButton(
                 onPressed: controller.loading.value
                     ? null
-                    : () => controller.signInDemo(emailCtrl.text.trim()),
+                    : () => controller.signIn(emailCtrl.text.trim(), passCtrl.text.trim()),
                 child: controller.loading.value
                     ? const CircularProgressIndicator()
                     : const Text('Iniciar sesión'),
@@ -36,6 +51,11 @@ class LoginPage extends GetView<AuthController> {
                 const SizedBox(height: 12),
                 Text('Error: ${controller.error.value}', style: const TextStyle(color: Colors.red)),
                 ],
+                const SizedBox(height: 24),
+                const Text('Usuarios de prueba:\n'
+                    'a@a.com / 123456 (profe, dueño de “curso1”)\n'
+                    'b@a.com / 123456 (estudiante inscrito en “curso1”)\n'
+                    'c@a.com / 123456 (sin cursos)'),
             ],
             );
         }),

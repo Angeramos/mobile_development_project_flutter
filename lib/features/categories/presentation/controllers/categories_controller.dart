@@ -1,33 +1,57 @@
 import 'package:get/get.dart';
 import '../../domain/entities/category.dart';
+import '../../data/repositories/category_local_repository.dart';
 
 class CategoriesController extends GetxController {
     final RxList<Category> categories = <Category>[].obs;
-    final RxnString error = RxnString();
+    final _repo = CategoryLocalRepository();
 
-    void addCategory(String name, GroupingMethod method, int maxMembers) {
-    final id = DateTime.now().millisecondsSinceEpoch.toString();
-    final category = Category(
-        id: id,
-        name: name,
-        groupingMethod: method,
-        maxMembers: maxMembers,
+    void loadByCourse(String courseId) {
+    final raw = _repo.listByCourse(courseId);
+    categories.assignAll(
+        raw.map((m) => Category(
+            id: m['id'],
+            name: m['name'],
+            groupingMethod: m['groupingMethod'] == 'random'
+                ? GroupingMethod.random
+                : GroupingMethod.selfAssigned,
+            maxMembers: m['maxMembers'],
+            courseId: m['courseId'], 
+            )),
     );
-    categories.add(category);
     }
 
-    void updateCategory(Category updated) {
-    final index = categories.indexWhere((c) => c.id == updated.id);
-    if (index == -1) {
-        error.value = "Categoría no encontrada";
-        return;
-    }
-    categories[index] = updated;
+
+    void addCategory(
+    String courseId,
+    String name,
+    GroupingMethod method,
+    int maxMembers,
+    ) {
+    final id = DateTime.now().millisecondsSinceEpoch.toString();
+    _repo.create({
+        'id': id,
+        'courseId': courseId,
+        'name': name,
+        'groupingMethod': method.name,
+        'maxMembers': maxMembers,
+    });
+    loadByCourse(courseId);
     }
 
-    void deleteCategory(String id) {
-    categories.removeWhere((c) => c.id == id);
+    void updateCategory(String courseId, Category updated) {
+    _repo.update({
+        'id': updated.id,
+        'courseId': courseId,
+        'name': updated.name,
+        'groupingMethod': updated.groupingMethod.name,
+        'maxMembers': updated.maxMembers,
+    });
+    loadByCourse(courseId);
     }
 
-    List<Category> listCategories() => categories.toList();
+    void deleteCategory(String courseId, String id) {
+    _repo.delete(id);
+    loadByCourse(courseId);
+    }
 }

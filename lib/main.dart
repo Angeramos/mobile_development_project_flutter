@@ -4,9 +4,13 @@ import 'core/di/app_bindings.dart';
 import 'core/routes/app_pages.dart';
 import 'core/routes/app_routes.dart';
 import 'features/auth/presentation/controllers/auth_controller.dart';
+import 'core/storage/storage_service.dart';
+import 'core/storage/seed.dart';
 
-void main() {
+Future<void> main() async {   
   WidgetsFlutterBinding.ensureInitialized();
+  await StorageService.init(); 
+  await seedIfEmpty();       
   runApp(const App());
 }
 

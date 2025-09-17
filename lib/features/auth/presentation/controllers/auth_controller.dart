@@ -9,18 +9,24 @@ class AuthController extends GetxController {
     final Rxn<AppUser> user = Rxn<AppUser>();
     final RxBool loading = false.obs;
     final RxnString error = RxnString();
+    final RxBool rememberMe = false.obs;
 
     @override
     void onInit() {
     super.onInit();
     user.value = repo.currentUser();
+    rememberMe.value = repo.getRememberMeFlag();
     }
 
-    Future<void> signInDemo(String email) async {
+    Future<void> signIn(String email, String password) async {
     loading.value = true;
     error.value = null;
     try {
-        final u = await repo.signInDemo(email: email);
+        final u = await repo.signInWithPassword(
+        email: email,
+        password: password,
+        remember: rememberMe.value,
+        );
         user.value = u;
         Get.offAllNamed('/home');
     } catch (e) {
@@ -30,7 +36,12 @@ class AuthController extends GetxController {
     }
     }
 
-Future<void> signOut() async {
+    void toggleRemember(bool v) {
+    rememberMe.value = v;
+    repo.setRememberMeFlag(v);
+    }
+
+    Future<void> signOut() async {
     await repo.signOut();
     user.value = null;
     Get.offAllNamed('/login');

@@ -4,4 +4,5 @@ abstract class AppRoutes {
     static const courses = '/courses';
     static const myCourses = '/my-courses';
     static const categories = '/categories';
+    static const groups = '/groups';
 }

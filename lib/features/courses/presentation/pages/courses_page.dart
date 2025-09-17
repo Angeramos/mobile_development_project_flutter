@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/courses_controller.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
+import '../../../../core/routes/app_routes.dart';
 
 class CoursesPage extends GetView<CoursesController> {
     const CoursesPage({super.key});
@@ -29,21 +30,31 @@ class CoursesPage extends GetView<CoursesController> {
                 icon: const Icon(Icons.person_add),
                 onPressed: () {
                     controller.enroll(course.id);
-                    Get.snackbar("Inscripción",
-                        "${auth.user.value?.name} inscrito en ${course.name}");
+                    Get.snackbar(
+                    "Inscripción",
+                    "${auth.user.value?.name} inscrito en ${course.name}",
+                    );
                 },
                 ),
+                onTap: () {
+                Get.toNamed('${AppRoutes.groups}?courseId=${course.id}');
+                },
             );
             },
         );
         }),
-        floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
-        onPressed: () {
-            final now = DateTime.now().millisecondsSinceEpoch.toString();
-            controller.addCourse("Curso $now", auth.user.value?.name ?? "Profesor");
-        },
-        ),
+        floatingActionButton: auth.user.value?.role == "teacher"
+            ? FloatingActionButton(
+                child: const Icon(Icons.add),
+                onPressed: () {
+                final now = DateTime.now().millisecondsSinceEpoch.toString();
+                controller.addCourse(
+                    "Curso $now",
+                    auth.user.value?.name ?? "Profesor",
+                );
+                },
+            )
+            : null,
     );
     }
 }
