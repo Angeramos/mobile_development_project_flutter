@@ -6,7 +6,7 @@ import '../../data/repositories/course_local_repository.dart';
 class CoursesController extends GetxController {
   final RxList<Course> courses = <Course>[].obs;
   final RxBool loading = false.obs;
-  final RxnString error = RxnString();
+  // ...existing code...
 
   final _repo = CourseLocalRepository();
 
@@ -46,14 +46,12 @@ class CoursesController extends GetxController {
 
   void enroll(String courseId) {
     final auth = Get.find<AuthController>();
-    final user = auth.user.value;
+    final user = auth.currentUser;
     if (user == null) {
-      error.value = "No hay usuario autenticado";
       return;
     }
     final index = courses.indexWhere((c) => c.id == courseId);
     if (index == -1) {
-      error.value = "Curso no encontrado";
       return;
     }
     final course = courses[index];
@@ -68,14 +66,12 @@ class CoursesController extends GetxController {
 
   bool enrollByCode(String code) {
     final auth = Get.find<AuthController>();
-    final user = auth.user.value;
+    final user = auth.currentUser;
     if (user == null) {
-      error.value = "No hay usuario autenticado";
       return false;
     }
     final raw = _repo.getByCode(code);
     if (raw == null) {
-      error.value = "Código inválido";
       return false;
     }
     _repo.enrollUser(raw['id'], user.id);

@@ -5,56 +5,56 @@ import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../../core/routes/app_routes.dart';
 
 class CoursesPage extends GetView<CoursesController> {
-    const CoursesPage({super.key});
+  const CoursesPage({super.key});
 
-    @override
-    Widget build(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
     final auth = Get.find<AuthController>();
 
     return Scaffold(
-        appBar: AppBar(title: const Text('Cursos')),
-        body: Obx(() {
+      appBar: AppBar(title: const Text('Cursos')),
+      body: Obx(() {
         if (controller.courses.isEmpty) {
-            return const Center(child: Text("No hay cursos"));
+          return const Center(child: Text("No hay cursos"));
         }
         return ListView.builder(
-            itemCount: controller.courses.length,
-            itemBuilder: (_, i) {
+          itemCount: controller.courses.length,
+          itemBuilder: (_, i) {
             final course = controller.courses[i];
             return ListTile(
-                title: Text(course.name),
-                subtitle: Text(
+              title: Text(course.name),
+              subtitle: Text(
                 'Profesor: ${course.professorName} • Inscritos: ${course.enrolledUserIds.length}',
-                ),
-                trailing: IconButton(
+              ),
+              trailing: IconButton(
                 icon: const Icon(Icons.person_add),
                 onPressed: () {
-                    controller.enroll(course.id);
-                    Get.snackbar(
+                  controller.enroll(course.id);
+                  Get.snackbar(
                     "Inscripción",
-                    "${auth.user.value?.name} inscrito en ${course.name}",
-                    );
+                    "${auth.currentUser?.name} inscrito en ${course.name}",
+                  );
                 },
-                ),
-                onTap: () {
+              ),
+              onTap: () {
                 Get.toNamed('${AppRoutes.groups}?courseId=${course.id}');
-                },
+              },
             );
-            },
+          },
         );
-        }),
-        floatingActionButton: auth.user.value?.role == "teacher"
-            ? FloatingActionButton(
-                child: const Icon(Icons.add),
-                onPressed: () {
+      }),
+      floatingActionButton: auth.currentUser?.role == "teacher"
+          ? FloatingActionButton(
+              child: const Icon(Icons.add),
+              onPressed: () {
                 final now = DateTime.now().millisecondsSinceEpoch.toString();
                 controller.addCourse(
-                    "Curso $now",
-                    auth.user.value?.name ?? "Profesor",
+                  "Curso $now",
+                  auth.currentUser?.name ?? "Profesor",
                 );
-                },
+              },
             )
-            : null,
+          : null,
     );
-    }
+  }
 }

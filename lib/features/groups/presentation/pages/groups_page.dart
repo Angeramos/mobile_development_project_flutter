@@ -100,7 +100,7 @@ class _CategoryGroupsList extends StatelessWidget {
               onPressed: () {
                 final ok = groupsCtrl.joinGroup(
                   groupId: g['id'],
-                  userId: auth.user.value?.id ?? '',
+                  userId: auth.currentUser?.id ?? '',
                   maxMembers: category.maxMembers,
                 );
                 if (!ok) {

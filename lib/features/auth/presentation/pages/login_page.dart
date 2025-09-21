@@ -2,64 +2,112 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/auth_controller.dart';
 
-class LoginPage extends GetView<AuthController> {
-    const LoginPage({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
-    @override
-    Widget build(BuildContext context) {
-    final emailCtrl = TextEditingController(text: 'a@a.com');   // usuario demo profe
-    final passCtrl  = TextEditingController(text: '123456');
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
 
+class _LoginPageState extends State<LoginPage> {
+  final AuthController authController = Get.find<AuthController>();
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
+  bool _keepLoggedIn = false;
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: const Text('Login')),
-        body: Padding(
+      appBar: AppBar(title: const Text('Login')),
+      body: Padding(
         padding: const EdgeInsets.all(16),
         child: Obx(() {
-            return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-                TextField(
-                controller: emailCtrl,
-                decoration: const InputDecoration(labelText: 'Email'),
+          return Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextFormField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(labelText: 'Email'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor ingresa tu email';
+                    }
+                    if (!GetUtils.isEmail(value)) {
+                      return 'Email inválido';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 12),
-                TextField(
-                controller: passCtrl,
-                decoration: const InputDecoration(labelText: 'Contraseña'),
-                obscureText: true,
+                TextFormField(
+                  controller: _passwordController,
+                  decoration: InputDecoration(
+                    labelText: 'Contraseña',
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
+                  ),
+                  obscureText: _obscurePassword,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor ingresa tu contraseña';
+                    }
+                    if (value.length < 6) {
+                      return 'La contraseña debe tener al menos 6 caracteres';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 8),
                 Row(
-                children: [
+                  children: [
                     Checkbox(
-                    value: controller.rememberMe.value,
-                    onChanged: (v) => controller.toggleRemember(v ?? false),
+                      value: _keepLoggedIn,
+                      onChanged: (v) {
+                        setState(() {
+                          _keepLoggedIn = v ?? false;
+                        });
+                      },
                     ),
-                    const Text('Recordarme'),
-                ],
+                    const Text('Mantener sesión iniciada'),
+                  ],
                 ),
                 const SizedBox(height: 12),
                 ElevatedButton(
-                onPressed: controller.loading.value
-                    ? null
-                    : () => controller.signIn(emailCtrl.text.trim(), passCtrl.text.trim()),
-                child: controller.loading.value
-                    ? const CircularProgressIndicator()
-                    : const Text('Iniciar sesión'),
+                  onPressed: authController.loading.value
+                      ? null
+                      : () async {
+                          if (_formKey.currentState!.validate()) {
+                            await authController.signIn(
+                              _emailController.text.trim(),
+                              _passwordController.text.trim(),
+                              keepLoggedIn: _keepLoggedIn,
+                            );
+                          }
+                        },
+                  child: authController.loading.value
+                      ? const CircularProgressIndicator()
+                      : const Text('Iniciar sesión'),
                 ),
-                if (controller.error.value != null) ...[
-                const SizedBox(height: 12),
-                Text('Error: ${controller.error.value}', style: const TextStyle(color: Colors.red)),
-                ],
-                const SizedBox(height: 24),
-                const Text('Usuarios de prueba:\n'
-                    'a@a.com / 123456 (profe, dueño de “curso1”)\n'
-                    'b@a.com / 123456 (estudiante inscrito en “curso1”)\n'
-                    'c@a.com / 123456 (sin cursos)'),
-            ],
-            );
+                // ...existing code...
+              ],
+            ),
+          );
         }),
-        ),
+      ),
     );
-    }
+  }
 }

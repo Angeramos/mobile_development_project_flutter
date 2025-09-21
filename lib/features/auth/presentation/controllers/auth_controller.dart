@@ -1,51 +1,50 @@
 import 'package:get/get.dart';
-import '../../../auth/domain/entities/user.dart';
-import '../../../auth/domain/repositories/auth_repository.dart';
+import '../../../../core/services/roble_service.dart';
 
 class AuthController extends GetxController {
-    final AuthRepository repo;
-    AuthController(this.repo);
+  final Rxn<dynamic> _user = Rxn();
+  dynamic get currentUser => _user.value;
+  final RxBool loading = false.obs;
+  final RxnString error = RxnString();
+  final RxBool isLoggedIn = false.obs;
 
-    final Rxn<AppUser> user = Rxn<AppUser>();
-    final RxBool loading = false.obs;
-    final RxnString error = RxnString();
-    final RxBool rememberMe = false.obs;
+  final RobleService _roble = Get.find<RobleService>();
 
-    @override
-    void onInit() {
-    super.onInit();
-    user.value = repo.currentUser();
-    rememberMe.value = repo.getRememberMeFlag();
-    }
-
-    Future<void> signIn(String email, String password) async {
+  Future<void> signIn(
+    String email,
+    String password, {
+    bool keepLoggedIn = false,
+  }) async {
     loading.value = true;
     error.value = null;
-    try {
-        final u = await repo.signInWithPassword(
-        email: email,
-        password: password,
-        remember: rememberMe.value,
-        );
-        user.value = u;
-        Get.offAllNamed('/home');
-    } catch (e) {
-        error.value = e.toString();
-    } finally {
-        loading.value = false;
+    final response = await _roble.login(
+      email: email,
+      password: password,
+      keepLoggedIn: keepLoggedIn,
+    );
+    final success = response['success'] == true;
+    isLoggedIn.value = success;
+    loading.value = false;
+    if (success) {
+      _user.value = {
+        'id': 'mock_id',
+        'name': email.split('@')[0],
+        'role': 'student',
+      };
+      Get.offAllNamed('/home');
+    } else {
+      error.value = response['message'] ?? "Usuario o contraseña incorrectos";
     }
-    }
+  }
 
-    void toggleRemember(bool v) {
-    rememberMe.value = v;
-    repo.setRememberMeFlag(v);
-    }
-
-    Future<void> signOut() async {
-    await repo.signOut();
-    user.value = null;
+  Future<void> signOut() async {
+    await _roble.logout();
+    isLoggedIn.value = false;
+    _user.value = null;
     Get.offAllNamed('/login');
-    }
+  }
 
-    bool get isLoggedIn => user.value != null;
+  Future<void> checkSession() async {
+    isLoggedIn.value = await _roble.isLoggedIn();
+  }
 }

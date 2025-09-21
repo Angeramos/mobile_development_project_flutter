@@ -1,52 +1,45 @@
+import '../../../auth/presentation/controllers/auth_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../auth/presentation/controllers/auth_controller.dart';
-import '../../../courses/presentation/pages/courses_page.dart';
-import '../../../categories/presentation/pages/categories_page.dart';
 
-class HomePage extends GetView<AuthController> {
-    const HomePage({super.key});
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
 
-    @override
-    Widget build(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
+    final AuthController authController = Get.find<AuthController>();
+    final user = authController.currentUser;
     return Scaffold(
-        appBar: AppBar(
+      appBar: AppBar(
         title: const Text('Home'),
         actions: [
-            IconButton(
-            onPressed: controller.signOut,
+          IconButton(
+            onPressed: authController.signOut,
             icon: const Icon(Icons.logout),
             tooltip: 'Cerrar sesión',
-            ),
+          ),
         ],
-        ),
-        body: Obx(() {
-        final user = controller.user.value;
-        if (user == null) {
-            return const Center(
-            child: Text('No hay usuario (debería redirigir a login)'),
-            );
-        }
-
-        return Center(
-            child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-                Text('Bienvenid@, ${user.name} (${user.role})'),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                onPressed: () => Get.to(() => const CoursesPage()),
-                child: const Text("Ver Cursos"),
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                onPressed: () => Get.to(() => const CategoriesPage()),
-                child: const Text("Ver Categorías"),
-                ),
-            ],
-            ),
-        );
-        }),
+      ),
+      body: Center(
+        child: user == null
+            ? const Text('No hay usuario')
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Bienvenid@, ${user.email ?? "Usuario"}'),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () {},
+                    child: const Text("Ver Cursos"),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {},
+                    child: const Text("Ver Categorías"),
+                  ),
+                ],
+              ),
+      ),
     );
-    }
+  }
 }

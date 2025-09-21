@@ -10,7 +10,7 @@ class CourseDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = Get.find<AuthController>();
-    final isTeacher = auth.user.value?.role == 'teacher';
+    final isTeacher = auth.currentUser?.role == 'teacher';
 
     return Scaffold(
       appBar: AppBar(title: Text(course.name)),

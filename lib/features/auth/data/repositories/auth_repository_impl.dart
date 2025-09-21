@@ -14,7 +14,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<AppUser> signInDemo({required String email}) {
-    throw UnimplementedError();
+    return Future.error('');
   }
 
   @override
